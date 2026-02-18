@@ -175,9 +175,26 @@ export default function Home() {
         </div>
 
         {/* How to use */}
-        <div className="w-full max-w-2xl text-center text-gray-500 text-sm">
+        <div className="w-full max-w-2xl text-center text-gray-500 text-sm mb-8">
           <p className="mb-2">使用方法：复制小红书视频链接 → 粘贴到上方输入框 → 点击下载</p>
           <p>支持格式：https://www.xiaohongshu.com/... 或 分享链接</p>
+        </div>
+
+        {/* Analyze Feature */}
+        <div className="w-full max-w-2xl">
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-lg p-8 text-white text-center">
+            <div className="text-4xl mb-4">📊</div>
+            <h2 className="text-2xl font-bold mb-2">帖子分析工具</h2>
+            <p className="mb-6 text-blue-100">
+              深度分析小红书帖子的热度、互动和变现潜力
+            </p>
+            <a
+              href="/analyze"
+              className="inline-block px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition"
+            >
+              开始分析 →
+            </a>
+          </div>
         </div>
       </main>
 
