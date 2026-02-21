@@ -34,14 +34,12 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
-        {/* Google AdSense - Replace ca-pub-XXXXXXX with your publisher ID after approval */}
-        {/*
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+        {/* Google AdSense */}
+        <script 
+          async 
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7935038704820292"
           crossOrigin="anonymous"
         />
-        */}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
