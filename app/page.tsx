@@ -61,14 +61,34 @@ export default function Home() {
         setUsage(newUsage);
         setCooldown(15);
 
-        // Trigger download
+        // Trigger download (fetch as Blob to ensure download, not playback)
         const downloadUrl = `/api/download/${data.token}`;
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `${data.metadata.title}.mp4`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const filename = `${data.metadata.title || 'video'}.mp4`;
+        
+        try {
+          const downloadResponse = await fetch(downloadUrl);
+          if (!downloadResponse.ok) {
+            throw new Error('Download failed');
+          }
+          
+          const blob = await downloadResponse.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = filename;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          // Cleanup
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (downloadError) {
+          console.error('Download trigger error:', downloadError);
+          // Fallback: open in new tab
+          window.open(downloadUrl, '_blank');
+        }
 
         setUrl("");
       } else {
