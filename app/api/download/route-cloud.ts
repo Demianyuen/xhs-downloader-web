@@ -1,73 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import https from 'https';
-import http from 'http';
-import { URL } from 'url';
-import {
-  generateToken,
-  generateSessionId,
-  storeDownload,
-} from '@/lib/download-manager';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import path from 'path';
+import fs from 'fs/promises';
 
-/**
- * 云端兼容的下载 API
- * 使用 HTTP 请求而不是本地 Python 脚本
- */
+const execAsync = promisify(exec);
 
-interface XHSVideoInfo {
-  title: string;
-  author: string;
-  videoUrl: string;
-  coverUrl?: string;
-}
-
-/**
- * 从小红书 URL 提取视频信息
- * 使用公开 API 或爬虫库
- */
-async function extractXHSVideoInfo(url: string): Promise<XHSVideoInfo> {
-  try {
-    // 方案 1: 使用第三方 API（推荐用于云端）
-    // 例如: https://api.xiaohongshu.com 或其他公开 API
-    
-    // 临时方案：返回模拟数据（用于测试）
-    const postId = url.match(/item\/(\w+)/)?.[1] || 'unknown';
-    
-    return {
-      title: `小红书视频 - ${postId}`,
-      author: '内容创作者',
-      videoUrl: `https://example.com/video/${postId}.mp4`,
-      coverUrl: `https://example.com/cover/${postId}.jpg`,
-    };
-  } catch (error) {
-    throw new Error('无法提取视频信息');
-  }
-}
-
-/**
- * 从 URL 下载文件到内存
- */
-async function downloadFileToBuffer(fileUrl: string): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const protocol = fileUrl.startsWith('https') ? https : http;
-    
-    protocol.get(fileUrl, (response) => {
-      if (response.statusCode !== 200) {
-        reject(new Error(`下载失败: ${response.statusCode}`));
-        return;
-      }
-
-      const chunks: Buffer[] = [];
-      response.on('data', (chunk) => chunks.push(chunk));
-      response.on('end', () => resolve(Buffer.concat(chunks)));
-      response.on('error', reject);
-    }).on('error', reject);
-  });
-}
+// 會話存儲
+const downloadStore = new Map();
 
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
-
+    
     if (!url) {
       return NextResponse.json(
         { error: '請提供視頻鏈接' },
@@ -75,74 +20,141 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 驗證 URL 格式
-    if (!url.includes('xiaohongshu.com')) {
+    // 清理 URL - 支持手機複製的分享文字
+    let cleanUrl = url;
+    
+    // 如果包含分享文字，提取 URL
+    const urlMatch = url.match(/https?:\/\/[^\s]+/);
+    if (urlMatch) {
+      cleanUrl = urlMatch[0];
+    }
+    
+    // 移除追蹤參數
+    cleanUrl = cleanUrl.split('?')[0];
+    cleanUrl = cleanUrl.replace(/\/$/, ''); // 移除尾部斜線
+    
+    console.log('[Download] Clean URL:', cleanUrl);
+
+    // 驗證URL格式
+    if (!cleanUrl.includes('xiaohongshu.com') && !cleanUrl.includes('xhslink.com')) {
       return NextResponse.json(
         { error: '請提供有效的小紅書鏈接' },
         { status: 400 }
       );
     }
 
-    console.log(`[Download] Starting cloud download for URL: ${url}`);
-
     // 生成會話 ID
-    const sessionId = generateSessionId();
+    const sessionId = `dl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log(`[Download] Starting download for session ${sessionId}`);
 
-    // 提取視頻信息
-    const videoInfo = await extractXHSVideoInfo(url);
-    console.log(`[Download] Video info extracted: ${videoInfo.title}`);
+    // 創建臨時目錄
+    const tempDir = path.join('/tmp', 'xhs-downloads', sessionId);
+    await fs.mkdir(tempDir, { recursive: true });
 
-    // 下載視頻文件到內存
-    // 注意：實際部署時需要使用真實的小紅書 API 或爬蟲服務
-    // 這裡使用模擬數據進行演示
+    // 調用 yt-dlp 或其他下載工具
+    // 使用 yt-dlp 處理小紅書視頻
+    const command = `yt-dlp -o "${tempDir}/%(title)s.%(ext)s" --no-warnings "${cleanUrl}" 2>&1`;
     
-    // 生成下載令牌
-    const token = generateToken();
-    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 分鐘
-
-    // 存儲下載信息（使用內存或 Redis）
-    storeDownload(token, {
-      sessionId,
-      metadata: {
-        title: videoInfo.title,
-        author: videoInfo.author,
-        url: videoInfo.videoUrl,
-      },
-      expiresAt,
-      // 在實際部署中，這裡應該存儲視頻數據或 URL
-      videoBuffer: null, // 暫時為 null，實際使用時存儲視頻數據
+    console.log('[Download] Executing:', command);
+    
+    const { stdout, stderr } = await execAsync(command, {
+      timeout: 120000, // 2分鐘超時
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
     });
 
-    console.log(`[Download] Download ready - token: ${token}, session: ${sessionId}`);
+    // 讀取下載的文件
+    const files = await fs.readdir(tempDir);
+    const videoFile = files.find(f => 
+      f.endsWith('.mp4') || f.endsWith('.mov') || f.endsWith('.webm')
+    );
+
+    if (!videoFile) {
+      // 嘗試找到任何文件
+      console.error('[Download] No video found. Files:', files);
+      console.error('[Download] Stderr:', stderr);
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: '下載失敗：無法提取視頻',
+          details: '請確認鏈接有效且視頻公開可見'
+        },
+        { status: 500 }
+      );
+    }
+
+    const filePath = path.join(tempDir, videoFile);
+    const stats = await fs.stat(filePath);
+    
+    // 生成下載 token
+    const token = `tok_${Math.random().toString(36).substr(2, 16)}`;
+    
+    // 存儲信息
+    downloadStore.set(token, {
+      filePath,
+      fileName: videoFile,
+      size: stats.size,
+      expiresAt: Date.now() + 10 * 60 * 1000, // 10分鐘過期
+      sessionId,
+    });
+
+    // 設置過期清理
+    setTimeout(() => {
+      downloadStore.delete(token);
+      // 清理文件
+      fs.rm(tempDir, { recursive: true }).catch(console.error);
+    }, 10 * 60 * 1000);
 
     return NextResponse.json({
       success: true,
       token,
       metadata: {
-        title: videoInfo.title,
-        author: videoInfo.author,
-        type: 'video',
+        title: videoFile.replace(/\.[^.]+$/, ''),
+        filename: videoFile,
+        size: stats.size,
       },
+      message: '視頻準備就緒，請點擊下載',
     });
 
   } catch (error: any) {
-    console.error('[Download] API Error:', error);
-
+    console.error('[Download] Error:', error);
+    
+    if (error.killed) {
+      return NextResponse.json(
+        { error: '下載超時，請稍後重試' },
+        { status: 408 }
+      );
+    }
+    
+    if (error.message?.includes('yt-dlp')) {
+      return NextResponse.json(
+        { 
+          error: '下載引擎未安裝',
+          details: '請聯繫管理員安裝 yt-dlp'
+        },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
-      {
-        error: '服務器錯誤',
-        details: error.message
-      },
+      { error: '服務器錯誤', details: error.message },
       { status: 500 }
     );
   }
 }
 
-// 健康檢查端點
+// 健康檢查
 export async function GET() {
-  return NextResponse.json({
+  // 清理過期條目
+  const now = Date.now();
+  for (const [token, data] of downloadStore.entries()) {
+    if (data.expiresAt < now) {
+      downloadStore.delete(token);
+      fs.rm(data.filePath, { recursive: true }).catch(() => {});
+    }
+  }
+  
+  return NextResponse.json({ 
     status: 'ok',
-    message: '雲端下載服務運行正常',
-    version: '2.0-cloud',
+    activeDownloads: downloadStore.size,
   });
 }
