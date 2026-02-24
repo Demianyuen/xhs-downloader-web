@@ -1,68 +1,120 @@
-'use client';
+export const metadata = {
+  title: "服務條款 | XHS Downloader",
+  description: "XHS Downloader 服務條款 - 使用本服務前請閱讀",
+};
 
 export default function TermsOfService() {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16">
-      <h1 className="text-3xl font-bold mb-8">服務條款 / Terms of Service</h1>
-      <p className="text-gray-500 mb-8">生效日期：2026年2月21日</p>
-      
-      <div className="prose prose-gray max-w-none">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
-          <p className="text-yellow-800 font-medium">⚠️ 重要提示</p>
-          <p className="text-yellow-700 text-sm mt-2">
-            使用本服務即表示你同意以下條款。如不同意，請勿使用 XHS Downloader。
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-orange-50 to-yellow-50">
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">服務條款</h1>
+          
+          <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">1. 接受條款</h2>
+              <p>
+                通過訪問和使用 XHS Downloader（以下簡稱「本服務」），您同意受本服務條款的約束。如果您不同意這些條款，請不要使用本服務。
+              </p>
+            </section>
 
-        <h2 className="text-xl font-semibold mt-8 mb-4">1. 服務說明</h2>
-        <p className="text-gray-600 leading-relaxed">
-          XHS Downloader 提供小紅書（Xiaohongshu）公開影片的下載功能。我們<strong>不鼓勵</strong>下載受版權保護的內容。用戶應自行確認有權下載目標內容。
-        </p>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">2. 服務描述</h2>
+              <p>
+                XHS Downloader 是一個在線工具，允許用戶從小紅書（Xiaohongshu）平台下載視頻內容。本服務僅供個人、非商業用途使用。
+              </p>
+            </section>
 
-        <h2 className="text-xl font-semibold mt-8 mb-4">2. 用戶責任</h2>
-        <p className="text-gray-600 leading-relaxed mb-4">你同意：</p>
-        <ul className="list-disc pl-6 space-y-2 text-gray-600">
-          <li>僅下載你有權使用或獲得授權的內容</li>
-          <li>不下載違法、誹謗、色情或侵犯知識產權的內容</li>
-          <li>不濫用服務（如自動化腳本大量下載）</li>
-          <li>不逆向工程、破解或干擾本網站運作</li>
-        </ul>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">3. 使用限制</h2>
+              <p>您同意不會：</p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>使用本服務進行任何非法活動</li>
+                <li>侵犯他人的知識產權或版權</li>
+                <li>上傳或傳播惡意軟件或有害代碼</li>
+                <li>嘗試破壞或干擾本服務的正常運行</li>
+                <li>進行任何形式的騷擾或濫用</li>
+                <li>將下載的內容用於商業目的</li>
+              </ul>
+            </section>
 
-        <h2 className="text-xl font-semibold mt-8 mb-4">3. 帳戶與付款</h2>
-        <ul className="list-disc pl-6 space-y-2 text-gray-600">
-          <li>免費帳戶：每日 3 次下載限額</li>
-          <li>付費訂閱：無限下載，按月或終身計費</li>
-          <li>付款通過 Stripe 安全處理，我們不儲存你的信用卡資訊</li>
-          <li>訂閱可隨時取消，已付費週期不設退款</li>
-        </ul>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">4. 版權和知識產權</h2>
+              <p>
+                本服務允許您下載視頻內容僅供個人學習和存檔之用。您必須尊重原始內容創作者的版權。我們不對您使用下載內容而產生的任何版權侵犯行為負責。
+              </p>
+            </section>
 
-        <h2 className="text-xl font-semibold mt-8 mb-4">4. 服務變更與終止</h2>
-        <p className="text-gray-600 leading-relaxed">
-          我們保留隨時修改或終止服務的權利。重大變更會提前通知。如你違反條款，我們有權暫停或終止你的帳戶，不設退款。
-        </p>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">5. 免責聲明</h2>
+              <p>
+                本服務按「現狀」提供，不提供任何明示或暗示的保證。我們不保證：
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li>服務將不間斷或無錯誤</li>
+                <li>下載功能始終可用</li>
+                <li>下載的內容質量或完整性</li>
+              </ul>
+            </section>
 
-        <h2 className="text-xl font-semibold mt-8 mb-4">5. 免責聲明</h2>
-        <p className="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded">
-          本服務按「現狀」提供，不提供任何明示或暗示擔保。我們不保證服務永不中斷、無錯誤，或下載內容符合你的期望。
-        </p>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">6. 責任限制</h2>
+              <p>
+                在任何情況下，XHS Downloader 及其所有者、員工或代理人均不對任何直接、間接、附帶、特殊或後果性損害負責，包括但不限於數據丟失、業務中斷或利潤損失。
+              </p>
+            </section>
 
-        <h2 className="text-xl font-semibold mt-8 mb-4">6. 責任限制</h2>
-        <p className="text-gray-600 leading-relaxed">
-          在法律允許範圍內，我們對任何間接、附帶、特殊或後果性損害不承擔責任，無論是否已被告知可能發生此類損害。
-        </p>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">7. 第三方內容</h2>
+              <p>
+                本服務允許您訪問第三方內容（如小紅書上的視頻）。我們不對第三方內容的準確性、合法性或適當性負責。
+              </p>
+            </section>
 
-        <h2 className="text-xl font-semibold mt-8 mb-4">7. 準據法與管轄</h2>
-        <p className="text-gray-600 leading-relaxed">
-          本條款受香港特別行政區法律管轄。任何爭議提交香港法院解決。
-        </p>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">8. 服務修改</h2>
+              <p>
+                我們保留隨時修改或終止本服務的權利，恕不另行通知。我們不對因服務修改或終止而造成的任何損失負責。
+              </p>
+            </section>
 
-        <h2 className="text-xl font-semibold mt-8 mb-4">8. 聯繫我們</h2>
-        <p className="text-gray-600 leading-relaxed">
-          如有問題，請電郵：<a href="mailto:legal@xhsvideodownloader.com" className="text-pink-600 hover:underline">legal@xhsvideodownloader.com</a>
-        </p>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">9. 用戶行為</h2>
+              <p>
+                您對您通過本服務進行的所有活動負全部責任。您同意不會使用本服務進行任何可能違反適用法律或侵犯他人權利的活動。
+              </p>
+            </section>
 
-        <div className="border-t pt-8 mt-12 text-gray-400 text-sm">
-          <p>© 2026 XHS Downloader. 保留所有權利。</p>
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">10. 終止</h2>
+              <p>
+                我們可以隨時以任何理由終止您對本服務的訪問，恕不另行通知。
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">11. 準據法</h2>
+              <p>
+                本服務條款受適用法律管轄。任何爭議應通過友好協商解決。
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">12. 聯繫我們</h2>
+              <p>
+                如果您對本服務條款有任何疑問，請聯繫我們：
+              </p>
+              <p className="mt-4">
+                <strong>電子郵件：</strong> support@xhsvideodownloader.com
+              </p>
+            </section>
+
+            <section className="mt-8 pt-8 border-t border-gray-200">
+              <p className="text-sm text-gray-600">
+                最後更新：2026 年 2 月 24 日
+              </p>
+            </section>
+          </div>
         </div>
       </div>
     </div>
