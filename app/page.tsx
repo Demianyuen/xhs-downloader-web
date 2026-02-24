@@ -52,7 +52,7 @@ const handleDownload = async (e: FormEvent) => {
     const cleanUrl = extractXHUrl(url);
     if (!cleanUrl) { alert(t.error.emptyUrl); return; }
     
-    const currentUsage = getUsageStatus());
+    const currentUsage = getUsageStatus();
     if (!currentUsage.canDownload) {
       alert(currentUsage.isLimitReached ? t.error.limitReached : t.error.waitCooldown.replace('$0', String(currentUsage.cooldownRemaining)));
       return;

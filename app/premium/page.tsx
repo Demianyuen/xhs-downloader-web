@@ -255,3 +255,191 @@ export default function PremiumPage() {
                 backgroundColor: `${colors.primary}10`,
                 borderColor: `${colors.primary}40`,
               }}
+            >
+              <div className="flex items-start gap-4">
+                <Clock className="w-5 h-5 flex-shrink-0" style={{ color: colors.primary }} />
+                <div className="text-left">
+                  <p className="font-semibold mb-2">You've reached your daily limit</p>
+                  <p style={{ color: colors.textMuted }} className="text-sm mb-4">
+                    Upgrade to Pro or Lifetime to download unlimited videos.
+                  </p>
+                  <button
+                    onClick={() => handleSubscribe('pro', pricingPlans[1].priceId)}
+                    className="text-sm font-medium transition-opacity hover:opacity-70"
+                    style={{ color: colors.primary }}
+                  >
+                    Upgrade Now →
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </section>
+
+      {/* Pricing Cards */}
+      <section className="relative z-10 py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6">
+            {pricingPlans.map((plan) => (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="relative group"
+              >
+                <div
+                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{
+                    background: `radial-gradient(circle at center, ${colors.primaryGlow} 0%, transparent 70%)`,
+                  }}
+                />
+                
+                <div
+                  className="relative p-8 rounded-2xl border backdrop-blur-sm transition-all duration-300"
+                  style={{
+                    backgroundColor: plan.popular ? `${colors.primary}15` : colors.surface,
+                    borderColor: plan.popular ? colors.primary : colors.border,
+                    borderWidth: plan.popular ? '2px' : '1px',
+                  }}
+                >
+                  {plan.badge && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span
+                        className="px-3 py-1 rounded-full text-xs font-semibold"
+                        style={{
+                          backgroundColor: colors.primary,
+                          color: colors.background,
+                        }}
+                      >
+                        {plan.badge}
+                      </span>
+                    </div>
+                  )}
+
+                  <h3 className="text-2xl font-semibold mb-2">{plan.name}</h3>
+                  <p style={{ color: colors.textMuted }} className="text-sm mb-6">
+                    {plan.description}
+                  </p>
+
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold">${plan.price}</span>
+                    <span style={{ color: colors.textMuted }} className="text-sm ml-2">
+                      {plan.period}
+                    </span>
+                    {plan.originalPrice && (
+                      <div style={{ color: colors.textMuted }} className="text-xs mt-2">
+                        <s>${plan.originalPrice}</s> Save {Math.round((1 - plan.price / plan.originalPrice) * 100)}%
+                      </div>
+                    )}
+                  </div>
+
+                  {plan.limited && (
+                    <div
+                      className="text-xs font-medium mb-6 px-3 py-2 rounded-lg"
+                      style={{
+                        backgroundColor: `${colors.accent}20`,
+                        color: colors.accent,
+                      }}
+                    >
+                      ⚡ {plan.limitedText}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => handleSubscribe(plan.id, plan.priceId)}
+                    disabled={plan.disabled || loading === plan.id}
+                    className="w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 mb-6"
+                    style={{
+                      backgroundColor: plan.popular ? colors.primary : colors.surfaceHover,
+                      color: plan.popular ? colors.background : colors.text,
+                      opacity: plan.disabled ? 0.5 : 1,
+                      cursor: plan.disabled ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {loading === plan.id ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        {plan.cta}
+                        {!plan.disabled && <ArrowRight className="w-4 h-4" />}
+                      </>
+                    )}
+                  </button>
+
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-sm">
+                        <Check className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.primary }} />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="relative z-10 py-20 px-6 border-t" style={{ borderColor: colors.border }}>
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl font-semibold mb-12 text-center">Frequently Asked Questions</h2>
+          
+          <div className="space-y-4">
+            {[
+              {
+                q: 'Can I cancel anytime?',
+                a: 'Yes, monthly plans can be cancelled anytime. Lifetime plans are one-time purchases with no refunds after 30 days.'
+              },
+              {
+                q: 'What payment methods do you accept?',
+                a: 'We accept all major credit cards (Visa, Mastercard, American Express) and digital wallets.'
+              },
+              {
+                q: 'Is there a free trial?',
+                a: 'The free plan includes 3 downloads per day at 480p quality. Upgrade anytime to access unlimited downloads.'
+              },
+              {
+                q: 'Do you offer refunds?',
+                a: 'Monthly subscriptions can be cancelled anytime. Lifetime purchases have a 30-day money-back guarantee.'
+              },
+            ].map((item, idx) => (
+              <details
+                key={idx}
+                className="group p-4 rounded-lg border transition-all"
+                style={{ borderColor: colors.border }}
+              >
+                <summary
+                  className="flex items-center justify-between cursor-pointer font-medium"
+                  style={{ color: colors.text }}
+                >
+                  {item.q}
+                  <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" />
+                </summary>
+                <p
+                  className="mt-4 text-sm leading-relaxed"
+                  style={{ color: colors.textMuted }}
+                >
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t py-8 px-6" style={{ borderColor: colors.border }}>
+        <div className="max-w-6xl mx-auto text-center text-sm" style={{ color: colors.textMuted }}>
+          <p>© 2024 XHS Downloader. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
+  );
+}

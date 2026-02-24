@@ -210,7 +210,7 @@ export default function StatsPage() {
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-gray-600">🔥 病毒級 (>70)</span>
+                  <span className="text-gray-600">🔥 病毒級 ({'>'}70)</span>
                   <span className="font-semibold text-red-600">
                     {stats.trend.distribution.viral}
                   </span>

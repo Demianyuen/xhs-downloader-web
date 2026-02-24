@@ -69,7 +69,6 @@ export async function POST(request: NextRequest) {
 
     // 创建 Checkout Session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
       line_items: [
         {
           price: price.id,
@@ -79,10 +78,8 @@ export async function POST(request: NextRequest) {
       mode: product.recurring ? 'subscription' : 'payment',
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}&product=${productId}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/pricing`,
-      customer_email_collection: {
-        enabled: true,
-      },
-    });
+      customer_creation: 'always',
+    } as any);
 
     return NextResponse.json({
       sessionId: session.id,

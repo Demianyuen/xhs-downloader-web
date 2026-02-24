@@ -3,18 +3,16 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import fs from 'fs/promises';
-import {
-  generateToken,
-  generateSessionId,
-  storeDownload,
-} from '@/lib/download-manager';
 
 const execAsync = promisify(exec);
+
+// 會話存儲
+const downloadStore = new Map();
 
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
-
+    
     if (!url) {
       return NextResponse.json(
         { error: '請提供視頻鏈接' },
@@ -22,140 +20,141 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 清理 URL - 支持手機複製的分享文字
+    let cleanUrl = url;
+    
+    // 如果包含分享文字，提取 URL
+    const urlMatch = url.match(/https?:\/\/[^\s]+/);
+    if (urlMatch) {
+      cleanUrl = urlMatch[0];
+    }
+    
+    // 移除追蹤參數
+    cleanUrl = cleanUrl.split('?')[0];
+    cleanUrl = cleanUrl.replace(/\/$/, ''); // 移除尾部斜線
+    
+    console.log('[Download] Clean URL:', cleanUrl);
+
     // 驗證URL格式
-    if (!url.includes('xiaohongshu.com')) {
+    if (!cleanUrl.includes('xiaohongshu.com') && !cleanUrl.includes('xhslink.com')) {
       return NextResponse.json(
         { error: '請提供有效的小紅書鏈接' },
         { status: 400 }
       );
     }
 
-    // Generate unique session ID
-    const sessionId = generateSessionId();
+    // 生成會話 ID
+    const sessionId = `dl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     console.log(`[Download] Starting download for session ${sessionId}`);
 
-    // Create temp directory for this session
-    const tempDir = path.join(process.cwd(), 'temp', sessionId, 'Download');
+    // 創建臨時目錄
+    const tempDir = path.join('/tmp', 'xhs-downloads', sessionId);
     await fs.mkdir(tempDir, { recursive: true });
 
-    // Python腳本路徑
-    const pythonPath = path.join(
-      'C:',
-      'Users',
-      'kin16',
-      'Documents',
-      '爬蟲',
-      'XHS-Downloader-master',
-      'venv',
-      'Scripts',
-      'python.exe'
-    );
-
-    const scriptPath = path.join(
-      'C:',
-      'Users',
-      'kin16',
-      'Documents',
-      '爬蟲',
-      'XHS-Downloader-master',
-      'download_video_simple.py'
-    );
-
-    // 構建命令 - 使用自定義輸出目錄
-    const command = `"${pythonPath}" "${scriptPath}" "${url}" -o "${tempDir}"`;
-
-    console.log('[Download] Executing command:', command);
-
-    // 執行下載
+    // 調用 yt-dlp 或其他下載工具
+    // 使用 yt-dlp 處理小紅書視頻
+    const command = `yt-dlp -o "${tempDir}/%(title)s.%(ext)s" --no-warnings "${cleanUrl}" 2>&1`;
+    
+    console.log('[Download] Executing:', command);
+    
     const { stdout, stderr } = await execAsync(command, {
-      timeout: 60000, // 60秒超時
+      timeout: 120000, // 2分鐘超時
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
     });
 
-    if (stderr && stderr.includes('錯誤')) {
-      console.error('[Download] Error:', stderr);
-      return NextResponse.json(
-        {
-          success: false,
-          error: '下載失敗',
-          details: stderr
-        },
-        { status: 500 }
-      );
-    }
-
-    // 解析輸出，提取下載信息
-    const titleMatch = stdout.match(/標題: (.+)/);
-    const authorMatch = stdout.match(/作者: (.+)/);
-    const typeMatch = stdout.match(/類型: (.+)/);
-
-    const metadata = {
-      title: titleMatch ? titleMatch[1].trim() : '未知',
-      author: authorMatch ? authorMatch[1].trim() : '未知',
-      type: typeMatch ? typeMatch[1].trim() : '未知',
-    };
-
-    // Find the downloaded video file
+    // 讀取下載的文件
     const files = await fs.readdir(tempDir);
-    const videoFile = files.find(file => file.endsWith('.mp4'));
+    const videoFile = files.find(f => 
+      f.endsWith('.mp4') || f.endsWith('.mov') || f.endsWith('.webm')
+    );
 
     if (!videoFile) {
-      console.error('[Download] No video file found in temp directory');
+      // 嘗試找到任何文件
+      console.error('[Download] No video found. Files:', files);
+      console.error('[Download] Stderr:', stderr);
       return NextResponse.json(
-        {
-          success: false,
-          error: '下載失敗：未找到視頻文件',
+        { 
+          success: false, 
+          error: '下載失敗：無法提取視頻',
+          details: '請確認鏈接有效且視頻公開可見'
         },
         { status: 500 }
       );
     }
 
     const filePath = path.join(tempDir, videoFile);
-    console.log(`[Download] Video file found: ${filePath}`);
-
-    // Generate download token
-    const token = generateToken();
-    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
-
-    // Store download info
-    storeDownload(token, {
+    const stats = await fs.stat(filePath);
+    
+    // 生成下載 token
+    const token = `tok_${Math.random().toString(36).substr(2, 16)}`;
+    
+    // 存儲信息
+    downloadStore.set(token, {
       filePath,
-      metadata,
-      expiresAt,
+      fileName: videoFile,
+      size: stats.size,
+      expiresAt: Date.now() + 10 * 60 * 1000, // 10分鐘過期
       sessionId,
     });
 
-    console.log(`[Download] Download ready - token: ${token}, session: ${sessionId}`);
+    // 設置過期清理
+    setTimeout(() => {
+      downloadStore.delete(token);
+      // 清理文件
+      fs.rm(tempDir, { recursive: true }).catch(console.error);
+    }, 10 * 60 * 1000);
 
     return NextResponse.json({
       success: true,
       token,
-      metadata,
+      metadata: {
+        title: videoFile.replace(/\.[^.]+$/, ''),
+        filename: videoFile,
+        size: stats.size,
+      },
+      message: '視頻準備就緒，請點擊下載',
     });
 
   } catch (error: any) {
-    console.error('[Download] API Error:', error);
-
+    console.error('[Download] Error:', error);
+    
     if (error.killed) {
       return NextResponse.json(
         { error: '下載超時，請稍後重試' },
         { status: 408 }
       );
     }
-
+    
+    if (error.message?.includes('yt-dlp')) {
+      return NextResponse.json(
+        { 
+          error: '下載引擎未安裝',
+          details: '請聯繫管理員安裝 yt-dlp'
+        },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
-      {
-        error: '服務器錯誤',
-        details: error.message
-      },
+      { error: '服務器錯誤', details: error.message },
       { status: 500 }
     );
   }
 }
 
-// 健康檢查端點
+// 健康檢查
 export async function GET() {
-  return NextResponse.json({
+  // 清理過期條目
+  const now = Date.now();
+  for (const [token, data] of downloadStore.entries()) {
+    if (data.expiresAt < now) {
+      downloadStore.delete(token);
+      fs.rm(data.filePath, { recursive: true }).catch(() => {});
+    }
+  }
+  
+  return NextResponse.json({ 
     status: 'ok',
-    message: '下載服務運行正常'
+    activeDownloads: downloadStore.size,
   });
 }

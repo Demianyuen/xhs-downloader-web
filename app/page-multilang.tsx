@@ -200,5 +200,26 @@ function HomeContent() {
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-6">
           {[
-            { icon: Sparkles, ...t.features.free, color: 'text-pink-600', bg: 'bg-pink-50' },
-            { icon:
+            { icon: Sparkles, title: t.features.free?.title || 'Free', description: t.features.free?.desc || 'No registration needed', color: 'text-pink-600', bg: 'bg-pink-50' },
+            { icon: Zap, title: t.features.fast?.title || 'Fast', description: t.features.fast?.desc || 'Quick downloads', color: 'text-yellow-600', bg: 'bg-yellow-50' },
+            { icon: Shield, title: t.features.safe?.title || 'Safe', description: t.features.safe?.desc || 'Your privacy protected', color: 'text-green-600', bg: 'bg-green-50' },
+          ].map((feature, idx) => (
+            <div key={idx} className={`${feature.bg} rounded-2xl p-6 text-center`}>
+              <feature.icon className={`w-8 h-8 ${feature.color} mx-auto mb-4`} />
+              <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
+              <p className="text-gray-600 text-sm">{feature.description}</p>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <I18nProvider>
+      <HomeContent />
+    </I18nProvider>
+  );
+}

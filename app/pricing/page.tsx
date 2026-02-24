@@ -205,4 +205,23 @@ export default function PricingPage() {
       </div>
 
       {/* FAQ Preview */}
-      <div className="max-w-3xl mx
+      <div className="max-w-3xl mx-auto mt-16">
+        <h2 className="text-3xl font-bold text-center mb-8">常見問題</h2>
+        <div className="space-y-4">
+          <details className="bg-gray-50 rounded-lg p-6 cursor-pointer hover:bg-gray-100 transition-colors">
+            <summary className="font-semibold text-gray-900">免費方案有什麼限制？</summary>
+            <p className="text-gray-600 mt-3">免費方案每天限制 3 次下載，解析度最高 480p。升級到付費方案可享無限下載與 1080p 高清。</p>
+          </details>
+          <details className="bg-gray-50 rounded-lg p-6 cursor-pointer hover:bg-gray-100 transition-colors">
+            <summary className="font-semibold text-gray-900">可以隨時取消訂閱嗎？</summary>
+            <p className="text-gray-600 mt-3">可以。月付方案可隨時取消，終身方案一次性購買，享受永久使用權。</p>
+          </details>
+          <details className="bg-gray-50 rounded-lg p-6 cursor-pointer hover:bg-gray-100 transition-colors">
+            <summary className="font-semibold text-gray-900">支持哪些支付方式？</summary>
+            <p className="text-gray-600 mt-3">我們支持所有主流信用卡（Visa、Mastercard、American Express）和 Apple Pay、Google Pay。</p>
+          </details>
+        </div>
+      </div>
+    </div>
+  );
+}
