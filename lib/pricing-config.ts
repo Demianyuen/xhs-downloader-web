@@ -69,7 +69,7 @@ export const PRICING_TIERS: PricingTier[] = [
     cta: '立即升級',
     ctaEn: 'Upgrade Now',
     popular: true,
-    stripePriceId: 'price_monthly_29', // 需替換成 Stripe 實際 Price ID
+    stripePriceId: 'prod_U2OV9Filq8LPlc', // Stripe Product ID (需確認是否為 Price ID)
   },
   {
     id: 'lifetime',
@@ -100,7 +100,7 @@ export const PRICING_TIERS: PricingTier[] = [
     ],
     cta: '一勞永逸',
     ctaEn: 'Get Lifetime',
-    stripePriceId: 'price_lifetime_199', // 需替換成 Stripe 實際 Price ID
+    stripePriceId: 'prod_U2OXtNYExAWHy5', // Stripe Product ID (需確認是否為 Price ID)
   },
 ];
 
